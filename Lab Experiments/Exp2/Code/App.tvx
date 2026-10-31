@@ -1,0 +1,227 @@
+import { useState } from "react";
+
+type ConceptKey = "minimal" | "bold" | "premium";
+type ScreenKey =
+  | "splash"
+  | "home"
+  | "listing"
+  | "product"
+  | "search"
+  | "cart"
+  | "checkout"
+  | "wishlist"
+  | "profile"
+  | "confirmation";
+
+const photos = {
+  hero: "https://images.unsplash.com/photo-1560869576-0fe77ff7f9f4?auto=format&fit=crop&w=900&q=85",
+  lifestyle: "https://images.unsplash.com/photo-1511556820780-d912e42b4980?auto=format&fit=crop&w=900&q=85",
+  sneaker: "https://images.unsplash.com/photo-1608680480325-d3ec3cdf7e60?auto=format&fit=crop&w=700&q=85",
+  beauty: "https://images.unsplash.com/photo-1685527645763-2cd1b47a2cd2?auto=format&fit=crop&w=700&q=85",
+  knit: "https://images.unsplash.com/photo-1593939694004-0f58f34b36cd?auto=format&fit=crop&w=700&q=85",
+  editorial: "https://images.unsplash.com/photo-1650388033943-72790a65095c?auto=format&fit=crop&w=900&q=85",
+};
+
+const products = [
+  { name: "Arlo Leather Tote", category: "Accessories", price: "$128", old: "$160", rating: "4.9", image: photos.lifestyle },
+  { name: "Nova Runner", category: "Footwear", price: "$94", old: "$120", rating: "4.8", image: photos.sneaker },
+  { name: "Sunday Skin Set", category: "Beauty", price: "$68", old: "$82", rating: "4.7", image: photos.beauty },
+  { name: "Forma Knit", category: "New season", price: "$112", old: "$145", rating: "4.9", image: photos.knit },
+];
+
+const concepts = {
+  minimal: {
+    label: "Concept A",
+    name: "Minimal & Clean",
+    short: "Effortless discovery",
+    rationale: "A quiet, high-clarity storefront that reduces cognitive load and puts products first.",
+    advantages: ["Fast to scan", "Highly accessible", "Broad brand fit"],
+    tradeoff: "Less promotional energy",
+    scores: [5, 4, 4, 5, 5, 5],
+  },
+  bold: {
+    label: "Concept B",
+    name: "Bold & Promotional",
+    short: "High-energy commerce",
+    rationale: "A vibrant, offer-led experience designed to increase engagement and product exploration.",
+    advantages: ["Strong conversion cues", "Offer visibility", "High engagement"],
+    tradeoff: "More visual density",
+    scores: [4, 5, 4, 5, 4, 5],
+  },
+  premium: {
+    label: "Concept C",
+    name: "Premium & Editorial",
+    short: "Curated confidence",
+    rationale: "An image-led editorial approach that builds desire and elevates brand perception.",
+    advantages: ["Distinctive identity", "Premium perception", "Immersive storytelling"],
+    tradeoff: "Lower product density",
+    scores: [4, 5, 5, 4, 4, 4],
+  },
+};
+
+const screens: { id: ScreenKey; label: string }[] = [
+  { id: "splash", label: "Splash" },
+  { id: "home", label: "Home" },
+  { id: "listing", label: "Products" },
+  { id: "product", label: "Details" },
+  { id: "search", label: "Search" },
+  { id: "cart", label: "Cart" },
+  { id: "checkout", label: "Checkout" },
+  { id: "wishlist", label: "Wishlist" },
+  { id: "profile", label: "Profile" },
+  { id: "confirmation", label: "Confirmed" },
+];
+
+function Icon({ name, size = 20 }: { name: string; size?: number }) {
+  const paths: Record<string, React.ReactNode> = {
+    home: <><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V21h14V9.5M9 21v-7h6v7" /></>,
+    grid: <><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></>,
+    heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />,
+    bag: <><path d="M6 8h12l1 13H5L6 8Z" /><path d="M9 9V6a3 3 0 0 1 6 0v3" /></>,
+    user: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
+    search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>,
+    arrow: <path d="m9 18 6-6-6-6" />,
+    back: <><path d="m15 18-6-6 6-6" /></>,
+    tune: <><path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></>,
+    star: <path d="m12 2.8 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9L6.4 20l1.1-6.2L3 9.4l6.2-.9L12 2.8Z" />,
+    check: <path d="m5 12 4 4L19 6" />,
+    close: <><path d="m6 6 12 12M18 6 6 18" /></>,
+    location: <><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" /></>,
+    card: <><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></>,
+    box: <><path d="m4 7 8-4 8 4-8 4-8-4Z" /><path d="m4 7 8 4 8-4v10l-8 4-8-4V7Z" /></>,
+  };
+  return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
+}
+
+function Button({ children, onClick, variant = "primary", className = "" }: { children: React.ReactNode; onClick?: () => void; variant?: "primary" | "ghost" | "soft"; className?: string }) {
+  return <button className={`btn btn-${variant} ${className}`} onClick={onClick}>{children}</button>;
+}
+
+function SearchBar({ active = false }: { active?: boolean }) {
+  return <div className={`searchbar ${active ? "active" : ""}`}><Icon name="search" size={18} /><span>{active ? "Search products, brands..." : "What are you looking for?"}</span>{!active && <Icon name="tune" size={17} />}</div>;
+}
+
+function ProductCard({ product, horizontal = false, liked = false, onLike, onOpen }: { product: typeof products[number]; horizontal?: boolean; liked?: boolean; onLike?: () => void; onOpen?: () => void }) {
+  return (
+    <article className={`product-card ${horizontal ? "horizontal" : ""}`}>
+      <div className="product-image-wrap" onClick={onOpen}>
+        <img src={product.image} alt={product.name} className="product-image" />
+        <button className={`heart-button ${liked ? "liked" : ""}`} onClick={(e) => { e.stopPropagation(); onLike?.(); }} aria-label="Save product"><Icon name="heart" size={16} /></button>
+        <span className="discount">-20%</span>
+      </div>
+      <div className="product-info" onClick={onOpen}>
+        <p className="eyebrow">{product.category}</p>
+        <h3>{product.name}</h3>
+        <div className="price-line"><strong>{product.price}</strong><s>{product.old}</s><span><Icon name="star" size={12} /> {product.rating}</span></div>
+      </div>
+    </article>
+  );
+}
+
+function TopBar({ title, onBack, action }: { title: string; onBack?: () => void; action?: React.ReactNode }) {
+  return <header className="topbar"><button className="icon-button" onClick={onBack} aria-label="Go back"><Icon name="back" /></button><h2>{title}</h2><div className="top-action">{action || <span />}</div></header>;
+}
+
+function BottomNav({ active, onNavigate }: { active: ScreenKey; onNavigate: (screen: ScreenKey) => void }) {
+  const items: { icon: string; label: string; screen: ScreenKey }[] = [
+    { icon: "home", label: "Home", screen: "home" },
+    { icon: "grid", label: "Shop", screen: "listing" },
+    { icon: "heart", label: "Saved", screen: "wishlist" },
+    { icon: "bag", label: "Cart", screen: "cart" },
+    { icon: "user", label: "Profile", screen: "profile" },
+  ];
+  return <nav className="bottom-nav">{items.map((item) => <button key={item.label} className={active === item.screen ? "active" : ""} onClick={() => onNavigate(item.screen)}><Icon name={item.icon} size={19} /><span>{item.label}</span></button>)}</nav>;
+}
+
+function HomeScreen({ concept, navigate, liked, toggleLike }: { concept: ConceptKey; navigate: (s: ScreenKey) => void; liked: boolean; toggleLike: () => void }) {
+  return <div className="screen with-nav">
+    <div className="home-head"><div><p className="eyebrow">Good morning</p><h1>{concept === "premium" ? "The edit" : concept === "bold" ? "Shop the drop" : "Discover"}</h1></div><button className="avatar" onClick={() => navigate("profile")}>AM</button></div>
+    <div onClick={() => navigate("search")}><SearchBar /></div>
+    <section className="hero-card">
+      <img src={concept === "premium" ? photos.editorial : photos.hero} alt="New season fashion collection" />
+      <div className="hero-overlay"><span>{concept === "bold" ? "UP TO 50% OFF" : "NEW SEASON"}</span><h2>{concept === "premium" ? "Objects of desire" : concept === "bold" ? "Color outside the lines" : "Everyday, elevated."}</h2><Button onClick={() => navigate("listing")} variant={concept === "premium" ? "soft" : "primary"}>Shop collection <Icon name="arrow" size={15} /></Button></div>
+    </section>
+    <section className="section"><div className="section-title"><h2>Shop by category</h2><button onClick={() => navigate("listing")}>View all</button></div><div className="category-row">{["New in", "Clothing", "Shoes", "Beauty"].map((item, i) => <button key={item}><span className={`category-icon c${i}`}>{item.charAt(0)}</span><small>{item}</small></button>)}</div></section>
+    <section className="section"><div className="section-title"><div><p className="eyebrow">{concept === "bold" ? "FLASH DEALS · 02:18:44" : "CURATED FOR YOU"}</p><h2>{concept === "premium" ? "Considered pieces" : "Trending now"}</h2></div><button onClick={() => navigate("listing")}>See all</button></div><div className="product-grid">{products.slice(0, 2).map((p, i) => <ProductCard key={p.name} product={p} liked={i === 0 && liked} onLike={toggleLike} onOpen={() => navigate("product")} />)}</div></section>
+    <BottomNav active="home" onNavigate={navigate} />
+  </div>;
+}
+
+function ListingScreen({ navigate, liked, toggleLike }: { navigate: (s: ScreenKey) => void; liked: boolean; toggleLike: () => void }) {
+  return <div className="screen with-nav"><TopBar title="New arrivals" onBack={() => navigate("home")} action={<button className="icon-button"><Icon name="search" /></button>} /><div className="listing-meta"><span>128 pieces</span><div><Button variant="ghost"><Icon name="tune" size={16} /> Filter</Button><Button variant="ghost">Sort <span>⌄</span></Button></div></div><div className="chips"><button className="selected">All</button><button>Clothing</button><button>Shoes</button><button>Accessories</button></div><div className="product-grid listing-grid">{products.map((p, i) => <ProductCard key={p.name} product={p} liked={i === 0 && liked} onLike={toggleLike} onOpen={() => navigate("product")} />)}</div><BottomNav active="listing" onNavigate={navigate} /></div>;
+}
+
+function ProductScreen({ navigate, liked, toggleLike }: { navigate: (s: ScreenKey) => void; liked: boolean; toggleLike: () => void }) {
+  const [color, setColor] = useState(0);
+  return <div className="screen product-screen"><div className="product-gallery"><img src={photos.lifestyle} alt="Arlo leather tote styled with neutral accessories" /><button className="gallery-back" onClick={() => navigate("listing")}><Icon name="back" /></button><button className={`gallery-heart ${liked ? "liked" : ""}`} onClick={toggleLike}><Icon name="heart" /></button><div className="gallery-dots"><i /><i /><i /></div></div><div className="product-detail"><p className="eyebrow">ATELIER NO. 8 · BESTSELLER</p><h1>Arlo Leather Tote</h1><div className="detail-price"><strong>$128</strong><s>$160</s><span>Save 20%</span></div><div className="rating"><Icon name="star" size={15} /> <b>4.9</b> <span>· 238 reviews</span></div><p className="description">Soft-grain leather, considered proportions, and room for every essential. Designed for daily rituals and long weekends.</p><div className="option-row"><div><p className="eyebrow">COLOUR</p><strong>{["Oat", "Espresso", "Black"][color]}</strong></div><div className="swatches">{["oat", "brown", "black"].map((c, i) => <button aria-label={c} key={c} className={`${c} ${color === i ? "selected" : ""}`} onClick={() => setColor(i)} />)}</div></div><div className="delivery-note"><Icon name="box" /><div><strong>Complimentary delivery</strong><span>Arrives in 2–3 business days</span></div></div></div><div className="sticky-cta"><div><small>Total</small><strong>$128</strong></div><Button onClick={() => navigate("cart")}>Add to cart <Icon name="bag" size={17} /></Button></div></div>;
+}
+
+function SearchScreen({ navigate }: { navigate: (s: ScreenKey) => void }) {
+  return <div className="screen"><TopBar title="Search" onBack={() => navigate("home")} /><div className="screen-pad"><SearchBar active /><section className="section recent"><div className="section-title"><h2>Recent searches</h2><button>Clear</button></div>{["Leather tote", "Neutral sneakers", "Summer linen"].map((x) => <button key={x}><Icon name="search" size={16} /><span>{x}</span><Icon name="arrow" size={16} /></button>)}</section><section className="section"><div className="section-title"><h2>Suggested for you</h2><button>See all</button></div><div className="product-grid">{products.slice(2, 4).map((p) => <ProductCard key={p.name} product={p} onOpen={() => navigate("product")} />)}</div></section><section className="trend-box"><p className="eyebrow">TRENDING SEARCH</p><h2>Quiet luxury</h2><Button onClick={() => navigate("listing")} variant="soft">Explore the edit</Button></section></div></div>;
+}
+
+function CartScreen({ navigate, qty, setQty }: { navigate: (s: ScreenKey) => void; qty: number; setQty: (n: number) => void }) {
+  return <div className="screen with-nav"><TopBar title={`Your bag (${qty})`} onBack={() => navigate("home")} /><div className="screen-pad"><div className="shipping-meter"><div><span>Free delivery unlocked</span><Icon name="check" size={14} /></div><i /></div><div className="cart-item"><img src={photos.lifestyle} alt="Arlo Leather Tote" /><div><p className="eyebrow">ATELIER NO. 8</p><h3>Arlo Leather Tote</h3><span>Oat</span><strong>$128</strong><div className="quantity"><button onClick={() => setQty(Math.max(1, qty - 1))}>−</button><span>{qty}</span><button onClick={() => setQty(qty + 1)}>+</button></div></div><button className="remove" aria-label="Remove item"><Icon name="close" size={17} /></button></div><div className="promo"><span>Promo code</span><button>Apply</button></div><div className="totals"><div><span>Subtotal</span><span>${128 * qty}.00</span></div><div><span>Delivery</span><span className="success">Complimentary</span></div><div className="grand-total"><strong>Total</strong><strong>${128 * qty}.00</strong></div></div><Button className="full" onClick={() => navigate("checkout")}>Secure checkout <Icon name="arrow" size={16} /></Button><p className="secure-copy">Secure checkout · Free returns within 30 days</p></div><BottomNav active="cart" onNavigate={navigate} /></div>;
+}
+
+function CheckoutScreen({ navigate, qty }: { navigate: (s: ScreenKey) => void; qty: number }) {
+  return <div className="screen checkout-screen"><TopBar title="Checkout" onBack={() => navigate("cart")} /><div className="progress"><i className="done" /><i className="done" /><i /></div><div className="screen-pad"><p className="step-label">STEP 2 OF 3 · REVIEW</p><InfoRow icon="location" title="Delivery address" text="Alex Morgan · 24 Lark Street, London" action="Change" /><InfoRow icon="card" title="Payment method" text="Visa ending in 4826" action="Change" /><section className="order-summary"><div className="section-title"><h2>Order summary</h2><span>{qty} item</span></div><div className="summary-product"><img src={photos.lifestyle} alt="Arlo Leather Tote" /><div><strong>Arlo Leather Tote</strong><span>Oat · Qty {qty}</span></div><strong>${128 * qty}</strong></div><div className="totals compact"><div><span>Subtotal</span><span>${128 * qty}.00</span></div><div><span>Delivery</span><span>Free</span></div><div className="grand-total"><strong>Total</strong><strong>${128 * qty}.00</strong></div></div></section></div><div className="checkout-footer"><p>By placing your order, you agree to our terms.</p><Button className="full" onClick={() => navigate("confirmation")}>Place order · ${128 * qty}</Button></div></div>;
+}
+
+function InfoRow({ icon, title, text, action }: { icon: string; title: string; text: string; action: string }) {
+  return <section className="info-row"><span className="info-icon"><Icon name={icon} /></span><div><h3>{title}</h3><p>{text}</p></div><button>{action}</button></section>;
+}
+
+function WishlistScreen({ navigate, liked, toggleLike }: { navigate: (s: ScreenKey) => void; liked: boolean; toggleLike: () => void }) {
+  return <div className="screen with-nav"><TopBar title="Saved pieces" onBack={() => navigate("home")} /><div className="screen-pad"><p className="wishlist-intro">Your considered collection, all in one place.</p><div className="product-grid listing-grid">{products.slice(0, liked ? 4 : 3).map((p, i) => <ProductCard key={p.name} product={p} liked={i === 0 && liked} onLike={i === 0 ? toggleLike : undefined} onOpen={() => navigate("product")} />)}</div></div><BottomNav active="wishlist" onNavigate={navigate} /></div>;
+}
+
+function ProfileScreen({ navigate }: { navigate: (s: ScreenKey) => void }) {
+  const rows = [["box", "Orders", "Track, return or buy again"], ["heart", "Saved pieces", "4 items"], ["location", "Addresses", "2 saved addresses"], ["card", "Payment", "Cards and gift credit"], ["tune", "Preferences", "Notifications and privacy"]];
+  return <div className="screen with-nav"><div className="profile-hero"><div className="avatar large">AM</div><div><p className="eyebrow">MEMBER SINCE 2022</p><h1>Alex Morgan</h1><p>alex.morgan@example.com</p></div><button>Edit</button></div><div className="member-card"><span>STUDIO MEMBER</span><strong>1,240 points</strong><p>760 points until your next reward</p><i /></div><div className="profile-list">{rows.map(([icon, title, copy]) => <button key={title}><span className="info-icon"><Icon name={icon} /></span><span><strong>{title}</strong><small>{copy}</small></span><Icon name="arrow" size={17} /></button>)}</div><BottomNav active="profile" onNavigate={navigate} /></div>;
+}
+
+function ConfirmationScreen({ navigate }: { navigate: (s: ScreenKey) => void }) {
+  return <div className="screen confirmation-screen"><div className="confirmation-art"><div className="check-ring"><Icon name="check" size={36} /></div><span className="spark s1" /><span className="spark s2" /><span className="spark s3" /></div><p className="eyebrow">ORDER #ST-24081</p><h1>It’s on its way.</h1><p>Thank you, Alex. We’ve received your order and will let you know when it leaves our studio.</p><div className="confirmation-card"><div><span>Estimated delivery</span><strong>Thursday, 24 October</strong></div><div className="summary-product"><img src={photos.lifestyle} alt="Arlo Leather Tote" /><div><strong>Arlo Leather Tote</strong><span>Oat · Quantity 1</span></div><strong>$128</strong></div><div className="confirm-total"><span>Total paid</span><strong>$128.00</strong></div></div><Button className="full" onClick={() => navigate("home")}>Continue shopping</Button><Button variant="ghost" onClick={() => navigate("profile")}>View order details</Button></div>;
+}
+
+function SplashScreen({ concept, navigate }: { concept: ConceptKey; navigate: (s: ScreenKey) => void }) {
+  return <div className="screen splash-screen" onClick={() => navigate("home")}><div className="brand-mark"><span>S</span></div><div><h1>{concept === "premium" ? "STUDIO" : concept === "bold" ? "SPARK" : "SORA"}</h1><p>{concepts[concept].short}</p></div><button>Tap to explore <Icon name="arrow" size={16} /></button></div>;
+}
+
+function Phone({ concept, screen, setScreen }: { concept: ConceptKey; screen: ScreenKey; setScreen: (s: ScreenKey) => void }) {
+  const [liked, setLiked] = useState(true);
+  const [qty, setQty] = useState(1);
+  let content: React.ReactNode;
+  if (screen === "splash") content = <SplashScreen concept={concept} navigate={setScreen} />;
+  else if (screen === "home") content = <HomeScreen concept={concept} navigate={setScreen} liked={liked} toggleLike={() => setLiked(!liked)} />;
+  else if (screen === "listing") content = <ListingScreen navigate={setScreen} liked={liked} toggleLike={() => setLiked(!liked)} />;
+  else if (screen === "product") content = <ProductScreen navigate={setScreen} liked={liked} toggleLike={() => setLiked(!liked)} />;
+  else if (screen === "search") content = <SearchScreen navigate={setScreen} />;
+  else if (screen === "cart") content = <CartScreen navigate={setScreen} qty={qty} setQty={setQty} />;
+  else if (screen === "checkout") content = <CheckoutScreen navigate={setScreen} qty={qty} />;
+  else if (screen === "wishlist") content = <WishlistScreen navigate={setScreen} liked={liked} toggleLike={() => setLiked(!liked)} />;
+  else if (screen === "profile") content = <ProfileScreen navigate={setScreen} />;
+  else content = <ConfirmationScreen navigate={setScreen} />;
+  return <div className={`phone concept-${concept}`}><div className="statusbar"><span>9:41</span><div><i /><i /><b /></div></div>{content}<div className="home-indicator" /></div>;
+}
+
+function ConceptPreview({ id, onOpen }: { id: ConceptKey; onOpen: () => void }) {
+  const c = concepts[id];
+  return <article className={`concept-card preview-${id}`}><div className="mini-phone"><div className="mini-status" /><div className="mini-content"><span className="mini-brand">{id === "premium" ? "STUDIO" : id === "bold" ? "SPARK" : "SORA"}</span><div className="mini-search" /><div className="mini-hero" style={{ backgroundImage: `url(${id === "premium" ? photos.editorial : photos.hero})` }}><span>{id === "bold" ? "MID-SEASON SALE" : "THE NEW EDIT"}</span></div><div className="mini-products"><i style={{ backgroundImage: `url(${photos.lifestyle})` }} /><i style={{ backgroundImage: `url(${photos.sneaker})` }} /></div></div></div><div className="concept-copy"><span>{c.label}</span><h2>{c.name}</h2><p>{c.rationale}</p><div className="advantage-row">{c.advantages.map((x) => <small key={x}>{x}</small>)}</div><p className="tradeoff"><b>Trade-off:</b> {c.tradeoff}</p><Button onClick={onOpen}>Explore prototype <Icon name="arrow" size={15} /></Button></div></article>;
+}
+
+function Dashboard({ openConcept }: { openConcept: (id: ConceptKey) => void }) {
+  const [submitted, setSubmitted] = useState(false);
+  const criteria = ["Usability", "Visual appeal", "Brand fit", "Discovery", "Accessibility", "Checkout"];
+  return <main className="dashboard"><header className="dash-header"><div className="dash-brand"><span>S</span> SHOP/STUDIO</div><div className="round-label">Stakeholder review · v1.0</div></header><section className="dash-intro"><p className="kicker">DESIGN DIRECTION EXPLORATION</p><h1>Three ways to make<br />shopping feel <em>better.</em></h1><p>Compare three distinct, production-ready directions for a modern mobile commerce experience. Explore every flow, weigh the trade-offs, and align on what we build next.</p><div className="intro-meta"><span><b>03</b> concepts</span><span><b>10</b> screens each</span><span><b>390×844</b> mobile frame</span></div></section><section className="concept-section"><div className="dash-section-title"><p className="kicker">01 · THE DIRECTIONS</p><h2>Explore the concepts</h2></div><div className="concept-grid">{(["minimal", "bold", "premium"] as ConceptKey[]).map((id) => <ConceptPreview id={id} key={id} onOpen={() => openConcept(id)} />)}</div></section><section className="comparison"><div className="dash-section-title"><p className="kicker">02 · OBJECTIVE COMPARISON</p><h2>How the directions compare</h2><p>Scores are directional and intended to structure the conversation.</p></div><div className="score-table"><div className="score-head"><span>Criteria</span>{(["minimal", "bold", "premium"] as ConceptKey[]).map((id) => <strong key={id}>{concepts[id].label}</strong>)}</div>{criteria.map((x, index) => <div className="score-row" key={x}><span>{x}</span>{(["minimal", "bold", "premium"] as ConceptKey[]).map((id) => <div className="score" key={id}>{[1, 2, 3, 4, 5].map((n) => <i className={n <= concepts[id].scores[index] ? "on" : ""} key={n} />)}<small>{concepts[id].scores[index]}.0</small></div>)}</div>)}</div></section><section className="feedback"><div className="feedback-copy"><p className="kicker">03 · DECISION TIME</p><h2>Stakeholder Feedback<br />and Approval</h2><p>Your perspective shapes the final direction. Share what works, what doesn’t, and which concept gives us the strongest foundation.</p><div className="feedback-note"><Icon name="check" /><span><b>Structured for alignment</b><small>Feedback is captured consistently across stakeholders.</small></span></div></div><form className="feedback-form" onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}><label>Your name or role<input required placeholder="e.g. Jordan Lee, Product Lead" /></label><label>Preferred concept<select defaultValue=""><option value="" disabled>Select a direction</option><option>Concept A · Minimal & Clean</option><option>Concept B · Bold & Promotional</option><option>Concept C · Premium & Editorial</option></select></label><label>Comments<textarea required placeholder="What feels strongest? What would you change?" rows={5} /></label><Button className="full">{submitted ? "Feedback recorded" : "Submit feedback"} <Icon name={submitted ? "check" : "arrow"} size={16} /></Button>{submitted && <p className="success-message">Thank you. Your recommendation has been added to the review.</p>}</form></section><footer><span>SHOP/STUDIO</span><p>Interactive design exploration · Prepared for stakeholder review</p></footer></main>;
+}
+
+export default function App() {
+  const [mode, setMode] = useState<"dashboard" | "prototype">("dashboard");
+  const [concept, setConcept] = useState<ConceptKey>("minimal");
+  const [screen, setScreen] = useState<ScreenKey>("home");
+  const openConcept = (id: ConceptKey) => { setConcept(id); setScreen("home"); setMode("prototype"); window.scrollTo(0, 0); };
+  if (mode === "dashboard") return <Dashboard openConcept={openConcept} />;
+  return <main className="prototype-shell"><header className="prototype-header"><button className="back-dashboard" onClick={() => setMode("dashboard")}><Icon name="back" size={18} /> Comparison dashboard</button><div className="concept-tabs">{(["minimal", "bold", "premium"] as ConceptKey[]).map((id) => <button className={concept === id ? "active" : ""} key={id} onClick={() => setConcept(id)}><span>{concepts[id].label}</span>{concepts[id].name}</button>)}</div><div className="frame-label">390 × 844</div></header><div className="prototype-stage"><aside><p>SCREEN FLOW</p>{screens.map((item, index) => <button key={item.id} className={screen === item.id ? "active" : ""} onClick={() => setScreen(item.id)}><span>{String(index + 1).padStart(2, "0")}</span>{item.label}</button>)}</aside><div className="device-wrap"><div className="device-note"><span>{concepts[concept].label}</span><strong>{concepts[concept].name}</strong><p>{concepts[concept].short}</p></div><Phone key={concept} concept={concept} screen={screen} setScreen={setScreen} /></div><aside className="design-notes"><p>DESIGN INTENT</p><h3>{concepts[concept].rationale}</h3><div><span>Strengths</span>{concepts[concept].advantages.map((x) => <small key={x}><Icon name="check" size={13} /> {x}</small>)}</div><div><span>Consideration</span><small>{concepts[concept].tradeoff}</small></div></aside></div></main>;
+}
