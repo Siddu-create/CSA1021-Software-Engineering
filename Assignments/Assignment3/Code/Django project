@@ -1,0 +1,10 @@
+python -m venv venv
+
+
+# Windows
+venv\Scripts\activate
+
+
+pip install -r requirements.txt
+django-admin startproject config .
+python manage.py startapp campus
