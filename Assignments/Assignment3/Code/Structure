@@ -1,0 +1,22 @@
+├── backend/
+│   ├── config/
+│   ├── campus/
+│   ├── manage.py
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   ├── index.html
+│   ├── vite.config.js
+│   └── Dockerfile
+│
+├── deployment/
+│   ├── docker-compose.yml
+│   └── .env.example
+│
+├── tests/
+│
+├── .gitignore
+└── README.md
