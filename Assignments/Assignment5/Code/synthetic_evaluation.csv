@@ -1,0 +1,11 @@
+student_id,answer_category,reference_mark,max_marks,subject_category
+S01,excellent,9,10,normal
+S02,good,8,10,normal
+S03,average,6,10,normal
+S04,poor,3,10,normal
+S05,excellent,10,10,normal
+S06,good,7,10,normal
+S07,average,5,10,normal
+S08,poor,2,10,normal
+S09,average,8,10,affected_category
+S10,average,6,10,normal
