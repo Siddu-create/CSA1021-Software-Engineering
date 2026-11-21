@@ -1,0 +1,7 @@
+student_id,answer,reference_mark,demonstrator_mark
+S01,requirements design testing maintenance,10,10
+S02,requirements design testing,8,8
+S03,design testing,6,5
+S04,requirements,3,3
+S05,testing maintenance design,8,8
+S06,maintenance,2,3
